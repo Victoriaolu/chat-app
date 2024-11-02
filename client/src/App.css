@@ -1,0 +1,107 @@
+import React, { useEffect, useState } from 'react';
+
+function App() {
+    const [messages, setMessages] = useState([]);
+    const [inputValue, setInputValue] = useState('');
+    const socket = new WebSocket('ws://localhost:3000');
+
+    useEffect(() => {
+        socket.onmessage = (event) => {
+            setMessages(prevMessages => [...prevMessages, event.data]);
+        };
+
+        return () => {
+            socket.close(); // Clean up on unmount
+        };
+    }, [socket]); // Include 'socket' in dependency array
+
+    const sendMessage = () => {
+        if (inputValue) {
+            socket.send(inputValue);
+            displayMessage(inputValue, true); // Call displayMessage here
+            setInputValue('');
+        }
+    };
+
+    const displayMessage = (message, isOutgoing) => {
+        // Logic to display message (if needed)
+    };
+
+    return (
+        <div className="chat-container">
+            <div className="chat-messages">
+                {messages.map((msg, index) => (
+                    <div key={index} className={`message ${true ? 'outgoing' : 'incoming'}`}>{msg}</div>
+                ))}
+            </div>
+            <div className="message-bottom">
+                <input 
+                    type="text" 
+                    value={inputValue} 
+                    onChange={(e) => setInputValue(e.target.value)} 
+                    placeholder="Type your message..." 
+                />
+                <button onClick={sendMessage}>Send</button>
+            </div>
+        </div>
+    );
+}
+
+export default App;
+/* chat container */
+.chat-container {
+    width: 400px; /* Adjust as needed */
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat messages area */
+.chat-messages {
+    height: 300px; /* Fixed height for scrolling */
+    overflow-y: auto; /* Enable scrolling */
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+}
+
+/* Individual message styles */
+.message {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+}
+
+/* Outgoing messages */
+.message.outgoing {
+    background-color: #007bff; /* Blue background for outgoing messages */
+    color: white;
+    text-align: right; /* Align text to the right */
+}
+
+/* Incoming messages */
+.message.incoming {
+    background-color: #f1f1f1; /* Light gray for incoming messages */
+    text-align: left; /* Align text to the left */
+}
+
+/* Message input area */
+.message-bottom {
+    display: flex;
+    margin-top: 10px;
+}
+
+.message-bottom input {
+    flex-grow: 1; /* Take up remaining space */
+    padding: 10px;
+}
+
+.message-bottom button {
+    padding: 10px;
+}
+@media (max-width: 600px) {
+    .chat-container {
+        width: 100%; /* Full width on small screens */
+        padding: 10px;
+    }
+}
